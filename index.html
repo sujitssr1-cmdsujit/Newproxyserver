@@ -36,9 +36,9 @@
   .text-gradient{background:linear-gradient(90deg,#22d3ee,#a78bfa,#facc15);-webkit-background-clip:text;background-clip:text;color:transparent}
   .gold-gradient{background:linear-gradient(90deg,#fde68a,#f59e0b,#facc15);-webkit-background-clip:text;background-clip:text;color:transparent}
   .hero-grid{background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:52px 52px;mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,black 40%,transparent 100%)}
-  .glow-btn{position:relative;overflow:hidden;background:linear-gradient(90deg,#06b6d4,#8b5cf6,#ec4899);box-shadow:0 12px 40px rgba(139,92,246,.45),0 4px 18px rgba(6,182,212,.35);transition:.25s}
+  .glow-btn{position:relative;overflow:hidden;background:linear-gradient(90deg,#16a34a,#22c55e,#15803d);box-shadow:0 12px 40px rgba(34,197,94,.32),0 4px 18px rgba(22,163,74,.28);transition:.25s}
   .glow-btn:active{transform:scale(.985)}
-  .glow-btn:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%);transform:translateX(-120%);animation:shimmer 2.8s infinite}
+  .glow-btn:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-120%);animation:shimmer 2.8s infinite}
   @keyframes shimmer{0%{transform:translateX(-120%)}60%,100%{transform:translateX(120%)}}
   @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}70%{box-shadow:0 0 0 8px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
   .live-dot{animation:pulseDot 1.6s infinite}
@@ -93,9 +93,9 @@
 <!-- ================= MAIN : SAB KUCH EK SCREEN ME (NO SCROLL) ================= -->
 <main class="flex-1 min-h-0 w-full max-w-3xl mx-auto px-3 sm:px-5 py-3 flex flex-col gap-3 relative z-10">
 
-  <!-- VIDEO : FRONT ME, AUTO PLAY (promo.mp4) -->
+  <!-- VIDEO : FRONT ME, AUTOPLAY -->
   <section class="flex-1 min-h-0 relative rounded-[22px] overflow-hidden border border-white/15 bg-black shadow-[0_20px_60px_rgba(0,0,0,.55)]">
-    <video id="promoVideo" class="absolute inset-0 w-full h-full object-contain bg-black" autoplay muted loop playsinline preload="auto" controls poster="https://raw.githubusercontent.com/sujitssr1-cmdsujit/gamer/refs/heads/main/logo.png">
+    <video id="promoVideo" class="absolute inset-0 w-full h-full object-contain bg-black" autoplay loop playsinline preload="auto" controls poster="https://raw.githubusercontent.com/sujitssr1-cmdsujit/gamer/refs/heads/main/logo.png">
       <source src="promo.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
@@ -106,16 +106,11 @@
       <span class="inline-flex items-center gap-1.5 bg-black/60 backdrop-blur border border-red-400/30 text-red-300 text-[10px] sm:text-[11px] font-bold px-3 py-1.5 rounded-full"><span class="w-2 h-2 bg-red-500 rounded-full live-badge-dot"></span> VIDEO GUIDE</span>
     </div>
 
-    <!-- Sound ON button -->
-    <button id="soundBtn" class="absolute bottom-14 sm:bottom-16 right-3 z-10 inline-flex items-center gap-2 bg-white text-slate-950 text-xs font-extrabold px-3.5 py-2.5 rounded-full shadow-2xl hover:bg-amber-300 transition">
-      <i data-lucide="volume-x" class="w-4 h-4"></i><span id="soundBtnText">SOUND ON</span>
-    </button>
-
     <!-- Video fallback (agar promo.mp4 abhi upload nahi hai) -->
     <div id="videoFallback" class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-[#0a0c20] text-center px-6 z-[5]">
       <img src="https://raw.githubusercontent.com/sujitssr1-cmdsujit/gamer/refs/heads/main/logo.png" alt="OB55 logo" class="w-20 h-20 rounded-3xl object-cover ring-1 ring-white/20 bg-white/10" onerror="this.style.display='none'">
       <p class="font-orbit font-bold tracking-widest text-sm">PREMIUM VIDEO GUIDE</p>
-      <p class="text-xs text-slate-400 leading-relaxed max-w-xs">Video ke liye GitHub repo me <span class="font-mono text-amber-300">promo.mp4</span> file ko <span class="font-mono text-cyan-300">index.html</span> ke saath upload karo — video yahin auto-play hoga.</p>
+      <p class="text-xs text-slate-400 leading-relaxed max-w-xs">Video ke liye GitHub repo me <span class="font-mono text-amber-300">promo.mp4</span> file ko <span class="font-mono text-cyan-300">index.html</span> ke saath upload karo — video yahin auto-play hoga. Browser autoplay rules ki wajah se sound ke liye kabhi-kabhi user tap zaroori ho sakta hai.</p>
     </div>
   </section>
 
@@ -231,40 +226,28 @@ if(shareBtn){
   });
 }
 
-/* ---------- VIDEO : AUTOPLAY (promo.mp4) ---------- */
+/* ---------- VIDEO : AUTOPLAY WITH SOUND REQUEST ---------- */
 const video=document.getElementById('promoVideo');
-const soundBtn=document.getElementById('soundBtn');
-const soundBtnText=document.getElementById('soundBtnText');
 
-function tryAutoplay(){
-  video.muted=true;
-  const p=video.play();
-  if(p) p.catch(()=>{});
+/* Browser autoplay policies often block autoplay with sound.
+   Try sound-on playback first; if blocked, autoplay muted as a fallback. */
+async function tryAutoplay(){
+  video.muted=false;
+  video.volume=1;
+  try{
+    await video.play();
+  }catch(e){
+    video.muted=true;
+    try{ await video.play(); }catch(err){}
+  }
 }
 tryAutoplay();
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden && video.paused) tryAutoplay(); });
-
-/* Sound toggle — browser rule: autoplay muted hota hai, tap par sound ON hoga */
-soundBtn.addEventListener('click',()=>{
-  if(video.muted){
-    video.muted=false; video.volume=1;
-    if(video.paused) video.play().catch(()=>{});
-    soundBtnText.textContent='SOUND OFF';
-    soundBtn.innerHTML='<i data-lucide="volume-2" class="w-4 h-4"></i><span id="soundBtnText">SOUND OFF</span>';
-    showToast('Video sound ON ho gaya');
-  }else{
-    video.muted=true;
-    soundBtn.innerHTML='<i data-lucide="volume-x" class="w-4 h-4"></i><span id="soundBtnText">SOUND ON</span>';
-    showToast('Video sound OFF');
-  }
-  lucide.createIcons();
-});
 
 /* Video error fallback — agar promo.mp4 upload nahi hai */
 function showVideoFallback(){
   const fb=document.getElementById('videoFallback');
   fb.classList.remove('hidden'); fb.classList.add('flex');
-  soundBtn.style.display='none';
 }
 video.addEventListener('error',showVideoFallback,true);
 const srcEl=video.querySelector('source');
